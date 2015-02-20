@@ -1,6 +1,8 @@
-# mtails
-A script that produces an ISO image of Tails OS with Benetech's Martus client installed
+# mtails or Martus on Tails
+A script that produces an ISO image of Tails (The Amnesic Incognito Live System, https://tails.boum.org) OS with Benetech's Martus Desktop client installed (https://www.martus.org)
 
-This is not for use in production.  This is both a proof of concept and for educational purposes only.
+Please be aware that this only a proof of concept exclusively for educational purposes at the moment. 
 
-In no way is it affiliated with the Tails project or Tails community
+Also, this in no way affiliated with the Tails project or the Tails community. 
+
+We will update this text to include the rationale, limitations and scope of this project as soon as possible.

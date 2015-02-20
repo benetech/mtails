@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Install deb dependencies and unzip Martus client into /usr/local/martus
+# Install deb dependencies and unzip Martus Desktop client into /usr/local/martus
 mount /proc
-echo -e "\n\nInstalling Debian packages for Martus dependencies"
+echo -e "\n\nInstalling Debian packages for Martus Desktop client dependencies"
 dpkg -i /tmp/libnss3_3.17.2-1.1_i386.deb /tmp/libjpeg62-turbo_1.3.1-11_i386.deb /tmp/openjdk-8-jre-headless_8u40~b22-2_i386.deb
 dpkg -i /tmp/openjdk-8-jre_8u40~b22-2_i386.deb /tmp/openjdk-8-jdk_8u40~b22-2_i386.deb
 dpkg -i --force-all /tmp/libopenjfx-jni_8u20-b26-3_i386.deb

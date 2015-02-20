@@ -1,8 +1,8 @@
-Mtails build script INSTALL.txt
+mtails build script INSTALL.txt
 -------------------------------
 
-This script will create an ISO image for Mtails, using a vanilla Tails ISO
-image, downloaded from the Internet and a copy of Martus.
+This script will create an ISO image for mtails, using a vanilla Tails ISO
+image, downloaded from the Internet and a copy of Martus 5.0.2.
 
 The script needs a Debian-based Linux system to run properly ( Debian,
 Unbuntu preferred )
@@ -22,4 +22,3 @@ can take are:
 
 clean:      erase working files
 distclean:  erase working files and downloaded ISO images
-
