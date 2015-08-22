@@ -22,8 +22,8 @@ else
 	echo -e "M-Tails build script (c) 2015 Benetech\n\n"
 fi
 
-TAILS_ISO_URL="http://dl.amnesia.boum.org/tails/stable/tails-i386-1.2.3/tails-i386-1.2.3.iso"
-TAILS_SIG_URL="https://tails.boum.org/torrents/files/tails-i386-1.2.3.iso.sig"
+TAILS_ISO_URL="http://dl.amnesia.boum.org/tails/stable/tails-i386-1.5/tails-i386-1.5.iso"
+TAILS_SIG_URL="https://tails.boum.org/torrents/files/tails-i386-1.5.iso.sig"
 TAILS_KEY_URL="https://tails.boum.org/tails-signing.key"
 
 #check if script is running as root, if it is then exit
@@ -45,14 +45,14 @@ cp chroot-tasks.sh martus-documentation.tgz *.desktop *.png martus-documentation
 # get the tails.iso if it isn't already there
 echo -e "Checking if we already have the latest Tails ISO."
 
-if [[ -f "/tmp/tails-iso/tails-i386-1.2.3.iso" ]]; then
+if [[ -f "/tmp/tails-iso/tails-i386-1.5.iso" ]]; then
 	echo -e  "Tails ISO already exists.  Good."
 fi
 
-if [[ ! -f "/tmp/tails-iso/tails-i386-1.2.3.iso" ]]; then
+if [[ ! -f "/tmp/tails-iso/tails-i386-1.5.iso" ]]; then
 	echo -e  "We don't have it yet.  Retrieving Tails ISO image\n\n"
 	cd /tmp/tails-iso
-	wget --progress=bar "http://dl.amnesia.boum.org/tails/stable/tails-i386-1.2.3/tails-i386-1.2.3.iso"
+	wget --progress=bar "http://dl.amnesia.boum.org/tails/stable/tails-i386-1.5/tails-i386-1.5.iso"
 	cd ..
 fi
 
@@ -68,7 +68,7 @@ fi
 rm -f /tmp/working/tmp_keyring.pgp
 gpg -q --no-default-keyring --keyring /tmp/working/tmp_keyring.pgp --import /tmp/tails-iso/tails-signing.key
 
-if gpg --no-default-keyring --keyring /tmp/working/tmp_keyring.pgp --fingerprint BE2CD9C1 | grep "0D24 B36A A9A2 A651 7878  7645 1202 821C BE2C D9C1"; then
+if gpg --no-default-keyring --keyring /tmp/working/tmp_keyring.pgp --fingerprint 58ACD84F | grep "A490 D0F4 D311 A415 3E2B  B7CA DBB8 02B2 58AC D84F"; then
 	echo -e  "Tails developer key verified..."
 else
 	echo -e  "ERROR.  Tails developer key does not seem to be the right one.  Something strange is going on.  Exiting."
@@ -77,7 +77,7 @@ fi
 
 echo -e "\n\nNow verifying that the signature on the Tails ISO matches the Tails developer key..."
 
-if gpg -q --no-default-keyring --keyring /tmp/working/tmp_keyring.pgp --keyid-format long --verify /tmp/tails-iso/tails-iso.sig /tmp/tails-iso/tails-i386-1.2.3.iso; then
+if gpg -q --no-default-keyring --keyring /tmp/working/tmp_keyring.pgp --keyid-format long --verify /tmp/tails-iso/tails-iso.sig /tmp/tails-iso/tails-i386-1.5.iso; then
 	echo -e  "Tails ISO signed by the Tails developer key and seems legitimate.  Proceeding."
 else
 	echo -e  "ERROR.  The Tails ISO does not seem to be signed by the proper signing key.  Something strange is going on.  Exiting."
@@ -86,7 +86,7 @@ fi
 
 # mount the ISO image
 echo -e  "\n\nMounting Tails ISO image.  You may need to enter your password."
-sudo mount -o loop /tmp/tails-iso/tails-i386-1.2.3.iso /tmp/tails-iso/mnt
+sudo mount -o loop /tmp/tails-iso/tails-i386-1.5.iso /tmp/tails-iso/mnt
 
 # extract the squashed filesystem
 echo -e  "\n\nExtracting the compressed root filesystem from the Tails ISO image"
@@ -108,39 +108,47 @@ echo -e  "\n\nDownloading Martus and its dependencies..."
 if [[ ! -f "/tmp/working/libnss3_3.17.2-1.1_i386.deb" ]]; then
 	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/n/nss/libnss3_3.17.2-1.1_i386.deb"
 fi
-if [[ ! -f "/tmp/working/libjpeg62-turbo_1.3.1-11_i386.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_1.3.1-11_i386.deb"
+if [[ ! -f "/tmp/working/libjpeg62-turbo_1.4.1-1_i386.deb" ]]; then
+	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_1.4.1-1_i386.deb"
 fi
-if [[ ! -f "/tmp/working/openjdk-8-jre-headless_8u40~b22-2_i386.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjdk-8/openjdk-8-jre-headless_8u40~b22-2_i386.deb"
+if [[ ! -f "/tmp/working/openjdk-8-jre-headless_8u66-b01-1_i386.deb" ]]; then
+	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjdk-8/openjdk-8-jre-headless_8u66-b01-1_i386.deb"
 fi
-if [[ ! -f "/tmp/working/openjdk-8-jre_8u40~b22-2_i386.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjdk-8/openjdk-8-jre_8u40~b22-2_i386.deb"
+if [[ ! -f "/tmp/working/openjdk-8-jre_8u66-b01-1_i386.deb" ]]; then
+	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjdk-8/openjdk-8-jre_8u66-b01-1_i386.deb"
 fi
-if [[ ! -f "/tmp/working/openjdk-8-jdk_8u40~b22-2_i386.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjdk-8/openjdk-8-jdk_8u40~b22-2_i386.deb"
+if [[ ! -f "/tmp/working/openjdk-8-jdk_8u66-b01-1_i386.deb" ]]; then
+	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjdk-8/openjdk-8-jdk_8u66-b01-1_i386.deb"
 fi
-if [[ ! -f "/tmp/working/openjfx_8u20-b26-3_i386.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjfx/openjfx_8u20-b26-3_i386.deb"
+
+
+if [[ ! -f "/tmp/working/openjfx_8u40-b25-3_i386.deb" ]]; then
+	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjfx/openjfx_8u40-b25-3_i386.deb"
 fi
-if [[ ! -f "/tmp/working/libopenjfx-java_8u20-b26-3_all.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjfx/libopenjfx-java_8u20-b26-3_all.deb"
+
+
+
+
+if [[ ! -f "/tmp/working/libopenjfx-java_8u40-b25-3_all.deb" ]]; then
+	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjfx/libopenjfx-java_8u40-b25-3_all.deb"
 fi
-if [[ ! -f "/tmp/working/libopenjfx-jni_8u20-b26-3_i386.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjfx/libopenjfx-jni_8u20-b26-3_i386.deb"
+if [[ ! -f "/tmp/working/libopenjfx-jni_8u40-b25-3_i386.deb" ]]; then
+	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjfx/libopenjfx-jni_8u40-b25-3_i386.deb"
 fi
-if [[ ! -f "/tmp/working/libicu4j-java_4.4.2.2-2_all.deb" ]]; then
+
+
+if [[ ! -f "/tmp/working/libicu4j-4.4-java_4.4.2.2-2_all.deb" ]]; then
 	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/i/icu4j-4.4/libicu4j-4.4-java_4.4.2.2-2_all.deb"
 fi
-if [[ ! -f "/tmp/working/tzdata-java_2015a-1_all.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/t/tzdata/tzdata-java_2015a-1_all.deb"
+if [[ ! -f "/tmp/working/tzdata-java_2015f-1_all.deb" ]]; then
+	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/t/tzdata/tzdata-java_2015f-1_all.deb"
 fi
-if [[ ! -f "/tmp/working/Martus-5.0.2.zip" ]]; then
-	wget --progress=bar "https://martus.org/installers/Martus-5.0.2.zip"
+if [[ ! -f "/tmp/working/Martus-5.1.zip" ]]; then
+	wget --progress=bar "https://martus.org/installers/Martus-5.1.zip"
 fi
 
 # copy packages into /tmp directory of squashfs
-cp /tmp/working/*.deb /tmp/working/Martus-5.0.2.zip /tmp/working/squashfs-root/tmp/
+cp /tmp/working/*.deb /tmp/working/Martus-5.1.zip /tmp/working/squashfs-root/tmp/
 
 # chroot into the squashfs
 echo -e "\n\nInstalling Martus into Tails root filesystem"
@@ -172,8 +180,8 @@ echo -e "\n\nInserting the root directory into Mtails ISO"
 sudo cp /tmp/mtails-iso/filesystem.squashfs /tmp/mtails-iso/mnt/live/
 
 echo -e "\n\nwriting ISO file.."
-sudo rm -f /tmp/mtails-iso/mtails-1.2.3-5.0.2.iso
-sudo mkisofs -r -V "M-Tails" -cache-inodes -J -l -no-emul-boot -boot-load-size 4 -boot-info-table -o /tmp/mtails-iso/mtails-1.2.3-5.0.2.iso -b isolinux/isolinux.bin -c isolinux/boot.cat /tmp/mtails-iso/mnt
+sudo rm -f /tmp/mtails-iso/mtails-1.5-5.1.iso
+sudo mkisofs -r -V "M-Tails" -cache-inodes -J -l -no-emul-boot -boot-load-size 4 -boot-info-table -o /tmp/mtails-iso/mtails-1.5-5.1.iso -b isolinux/isolinux.bin -c isolinux/boot.cat /tmp/mtails-iso/mnt
 
 #sudo umount -f /tmp/tails-iso/mnt
 #sudo umount -f /tmp/mtails-iso/mnt
