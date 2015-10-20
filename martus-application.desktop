@@ -4,5 +4,5 @@ Encoding=UTF-8
 Name=Martus
 Type=Application
 Terminal=false
-Exec=/usr/bin/java -jar /usr/local/martus/MartusClient-5.1.0/martus.jar
+Exec=/usr/bin/java -jar -DsocksProxyHost=127.0.0.1 -DsocksProxyPort=9050 /usr/local/martus/MartusClient-5.1.0/martus.jar
 Icon=/usr/share/icons/gnome/48x48/categories/martus-app.png
