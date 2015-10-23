@@ -14,7 +14,7 @@ if [[ "$1" == "clean" ]]; then
 	exit 0
 elif [[ "$1" == "distclean" ]]; then
 	sudo rm -rf /tmp/mtails-iso /tmp/tails-iso /tmp/working
-	echo -e "\n\nCleaned up the doanloaded packages, Tails 1.2.3. ISO image, and other working files."
+	echo -e "\n\nCleaned up the doanloaded packages, Tails ISO image, and other working files."
 	echo -e "You can now re-run the script with:"
 	echo -e "$0"
 	exit 0
@@ -22,8 +22,11 @@ else
 	echo -e "M-Tails build script (c) 2015 Benetech\n\n"
 fi
 
-TAILS_ISO_URL="http://dl.amnesia.boum.org/tails/stable/tails-i386-1.5/tails-i386-1.5.iso"
-TAILS_SIG_URL="https://tails.boum.org/torrents/files/tails-i386-1.5.iso.sig"
+RELEASE_STR=$(curl http://dl.amnesia.boum.org/tails/stable/ 2>&1 | grep -o -E 'href="tails-([^"#]+)"' | cut -d'"' -f2 | sed 's|/||')
+TAILS_ISO_URL="http://dl.amnesia.boum.org/tails/stable/$RELEASE_STR/$RELEASE_STR.iso"
+TAILS_SIG_URL="https://tails.boum.org/torrents/files/$RELEASE_STR.iso.sig"
+
+
 TAILS_KEY_URL="https://tails.boum.org/tails-signing.key"
 
 #check if script is running as root, if it is then exit
@@ -45,14 +48,15 @@ cp chroot-tasks.sh martus-documentation.tgz *.desktop *.png martus-documentation
 # get the tails.iso if it isn't already there
 echo -e "Checking if we already have the latest Tails ISO."
 
-if [[ -f "/tmp/tails-iso/tails-i386-1.5.iso" ]]; then
+if [[ -f "/tmp/tails-iso/$RELEASE_STR.iso" ]]; then
 	echo -e  "Tails ISO already exists.  Good."
 fi
 
-if [[ ! -f "/tmp/tails-iso/tails-i386-1.5.iso" ]]; then
+if [[ ! -f "/tmp/tails-iso/$RELEASE_STR.iso" ]]; then
 	echo -e  "We don't have it yet.  Retrieving Tails ISO image\n\n"
 	cd /tmp/tails-iso
-	wget --progress=bar "http://dl.amnesia.boum.org/tails/stable/tails-i386-1.5/tails-i386-1.5.iso"
+	wget --progress=bar $TAILS_ISO_URL
+
 	cd ..
 fi
 
@@ -63,6 +67,7 @@ if [[ ! -f "/tmp/tails-iso/tails-signing-key" ]]; then
 fi
 if [[ ! -f "/tmp/tails-iso/tails-iso.sig" ]]; then
 	curl -o /tmp/tails-iso/tails-iso.sig $TAILS_SIG_URL
+
 fi
 
 rm -f /tmp/working/tmp_keyring.pgp
@@ -77,16 +82,16 @@ fi
 
 echo -e "\n\nNow verifying that the signature on the Tails ISO matches the Tails developer key..."
 
-if gpg -q --no-default-keyring --keyring /tmp/working/tmp_keyring.pgp --keyid-format long --verify /tmp/tails-iso/tails-iso.sig /tmp/tails-iso/tails-i386-1.5.iso; then
+if gpg -q --no-default-keyring --keyring /tmp/working/tmp_keyring.pgp --keyid-format long --verify /tmp/tails-iso/tails-iso.sig /tmp/tails-iso/$RELEASE_STR.iso; then
 	echo -e  "Tails ISO signed by the Tails developer key and seems legitimate.  Proceeding."
 else
-	echo -e  "ERROR.  The Tails ISO does not seem to be signed by the proper signing key.  Something strange is going on.  Exiting."
+	echo -e  "ERROR.  The Tails ISO does not seem to be signed by the proper signing key.  Something strange is going on. There mbash ay be an issue with the iso download, try running mtails-build.sh distclean first. Exiting."
 	exit 1
 fi
 
 # mount the ISO image
 echo -e  "\n\nMounting Tails ISO image.  You may need to enter your password."
-sudo mount -o loop /tmp/tails-iso/tails-i386-1.5.iso /tmp/tails-iso/mnt
+sudo mount -o loop /tmp/tails-iso/$RELEASE_STR.iso /tmp/tails-iso/mnt
 
 # extract the squashed filesystem
 echo -e  "\n\nExtracting the compressed root filesystem from the Tails ISO image"
