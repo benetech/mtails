@@ -22,12 +22,18 @@ else
 	echo -e "M-Tails build script (c) 2015 Benetech\n\n"
 fi
 
+#Pull most recent stable Tails ISO and sig
 RELEASE_STR=$(curl http://dl.amnesia.boum.org/tails/stable/ 2>&1 | grep -o -E 'href="tails-([^"#]+)"' | cut -d'"' -f2 | sed 's|/||')
+RELEASE_NUM=$(echo $RELEASE_STR | grep -o -E '[0-9]+\.[0-9]+(\.[0-9]+)?')
+
 TAILS_ISO_URL="http://dl.amnesia.boum.org/tails/stable/$RELEASE_STR/$RELEASE_STR.iso"
 TAILS_SIG_URL="https://tails.boum.org/torrents/files/$RELEASE_STR.iso.sig"
-
-
 TAILS_KEY_URL="https://tails.boum.org/tails-signing.key"
+
+#Pull most recent Martus release
+MARTUS_REL=($(curl https://martus.org/download.html 2>&1 | grep -o -E 'Martus-[0-9]+\.[0-9]+(\.[0-9]+)?.zip'))
+
+MARTUS_NUM=$(echo ${MARTUS_REL[0]} | grep -o -E '[0-9]+\.[0-9]+(\.[0-9]+)?')
 
 #check if script is running as root, if it is then exit
 if [[ "$(id -u)" = "0" ]]; then
@@ -35,8 +41,12 @@ if [[ "$(id -u)" = "0" ]]; then
 	exit 1
 fi
 
-echo -e "installing local prerequisites"
+echo -e "installing local prerequisites and sources"
+
 sudo apt-get install curl wget squashfs-tools
+sudo add-apt-repository "deb http://mirrors.kernel.org/ubuntu wily main universe"
+sudo add-apt-repository "deb http://ftp.us.debian.org/debian sid main"
+sudo apt-get update
 
 # create needed directories
 echo -e  "Creating working directories...\n\n"
@@ -85,7 +95,7 @@ echo -e "\n\nNow verifying that the signature on the Tails ISO matches the Tails
 if gpg -q --no-default-keyring --keyring /tmp/working/tmp_keyring.pgp --keyid-format long --verify /tmp/tails-iso/tails-iso.sig /tmp/tails-iso/$RELEASE_STR.iso; then
 	echo -e  "Tails ISO signed by the Tails developer key and seems legitimate.  Proceeding."
 else
-	echo -e  "ERROR.  The Tails ISO does not seem to be signed by the proper signing key.  Something strange is going on. There mbash ay be an issue with the iso download, try running mtails-build.sh distclean first. Exiting."
+	echo -e  "ERROR.  The Tails ISO does not seem to be signed by the proper signing key.  Something strange is going on. There may be an issue with the iso download, try running mtails-build.sh distclean first. Exiting."
 	exit 1
 fi
 
@@ -110,50 +120,65 @@ fi
 
 # download packages
 echo -e  "\n\nDownloading Martus and its dependencies..."
-if [[ ! -f "/tmp/working/libnss3_3.17.2-1.1_i386.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/n/nss/libnss3_3.17.2-1.1_i386.deb"
+
+PKG='libnss3'
+if ! ls /tmp/working/$PKG*.deb 1> /dev/null 2>&1; then
+	wget --progress=bar $(apt-get install --reinstall --print-uris -qq $PKG | cut -d"'" -f2 | grep "/${PKG}_")
 fi
-if [[ ! -f "/tmp/working/libjpeg62-turbo_1.4.1-1_i386.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_1.4.1-1_i386.deb"
+
+PKG='libjpeg62-turbo'
+if ! ls /tmp/working/$PKG*.deb 1> /dev/null 2>&1; then
+	wget --progress=bar $(apt-get install --reinstall --print-uris -qq $PKG | cut -d"'" -f2 | grep "/${PKG}_")
 fi
-if [[ ! -f "/tmp/working/openjdk-8-jre-headless_8u66-b01-1_i386.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjdk-8/openjdk-8-jre-headless_8u66-b01-1_i386.deb"
+
+PKG='openjdk-8-jre-headless'
+if ! ls /tmp/working/$PKG*.deb 1> /dev/null 2>&1; then
+	wget --progress=bar $(apt-get install --reinstall --print-uris -qq $PKG | cut -d"'" -f2 | grep "/${PKG}_")
 fi
-if [[ ! -f "/tmp/working/openjdk-8-jre_8u66-b01-1_i386.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjdk-8/openjdk-8-jre_8u66-b01-1_i386.deb"
+
+PKG='openjdk-8-jre'
+if ! ls /tmp/working/$PKG*.deb 1> /dev/null 2>&1; then
+	wget --progress=bar $(apt-get install --reinstall --print-uris -qq $PKG | cut -d"'" -f2 | grep "/${PKG}_")
 fi
-if [[ ! -f "/tmp/working/openjdk-8-jdk_8u66-b01-1_i386.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjdk-8/openjdk-8-jdk_8u66-b01-1_i386.deb"
+
+PKG='openjdk-8-jdk'
+if ! ls /tmp/working/$PKG*.deb 1> /dev/null 2>&1; then
+	wget --progress=bar $(apt-get install --reinstall --print-uris -qq $PKG | cut -d"'" -f2 | grep "/${PKG}_")
+fi
+
+PKG='openjfx'
+if ! ls /tmp/working/$PKG*.deb 1> /dev/null 2>&1; then
+	wget --progress=bar $(apt-get install --reinstall --print-uris -qq $PKG | cut -d"'" -f2 | grep "/${PKG}_")
+fi
+
+PKG='libopenjfx-java'
+if ! ls /tmp/working/$PKG*.deb 1> /dev/null 2>&1; then
+	wget --progress=bar $(apt-get install --reinstall --print-uris -qq $PKG | cut -d"'" -f2 | grep "/${PKG}_")
+fi
+
+PKG='libopenjfx-jni'
+if ! ls /tmp/working/$PKG*.deb 1> /dev/null 2>&1; then
+	wget --progress=bar $(apt-get install --reinstall --print-uris -qq $PKG | cut -d"'" -f2 | grep "/${PKG}_")
 fi
 
 
-if [[ ! -f "/tmp/working/openjfx_8u40-b25-3_i386.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjfx/openjfx_8u40-b25-3_i386.deb"
+PKG='libicu4j-4.4-java'
+if ! ls /tmp/working/$PKG*.deb 1> /dev/null 2>&1; then
+	wget --progress=bar $(apt-get install --reinstall --print-uris -qq $PKG | cut -d"'" -f2 | grep "/${PKG}_")
 fi
 
-
-
-
-if [[ ! -f "/tmp/working/libopenjfx-java_8u40-b25-3_all.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjfx/libopenjfx-java_8u40-b25-3_all.deb"
-fi
-if [[ ! -f "/tmp/working/libopenjfx-jni_8u40-b25-3_i386.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/o/openjfx/libopenjfx-jni_8u40-b25-3_i386.deb"
+PKG='tzdata-java'
+if ! ls /tmp/working/$PKG*.deb 1> /dev/null 2>&1; then
+	wget --progress=bar $(apt-get install --reinstall --print-uris -qq $PKG | cut -d"'" -f2 | grep "/${PKG}_")
 fi
 
+if [[ ! -f "/tmp/working/${MARTUS_REL[0]}" ]]; then
+	wget --progress=bar "https://martus.org/installers/${MARTUS_REL[0]}"
+fi
 
-if [[ ! -f "/tmp/working/libicu4j-4.4-java_4.4.2.2-2_all.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/i/icu4j-4.4/libicu4j-4.4-java_4.4.2.2-2_all.deb"
-fi
-if [[ ! -f "/tmp/working/tzdata-java_2015f-1_all.deb" ]]; then
-	wget --progress=bar "http://ftp.us.debian.org/debian/pool/main/t/tzdata/tzdata-java_2015f-1_all.deb"
-fi
-if [[ ! -f "/tmp/working/Martus-5.1.zip" ]]; then
-	wget --progress=bar "https://martus.org/installers/Martus-5.1.zip"
-fi
 
 # copy packages into /tmp directory of squashfs
-cp /tmp/working/*.deb /tmp/working/Martus-5.1.zip /tmp/working/squashfs-root/tmp/
+cp /tmp/working/*.deb /tmp/working/${MARTUS_REL[0]} /tmp/working/squashfs-root/tmp/
 
 # chroot into the squashfs
 echo -e "\n\nInstalling Martus into Tails root filesystem"
@@ -185,8 +210,8 @@ echo -e "\n\nInserting the root directory into Mtails ISO"
 sudo cp /tmp/mtails-iso/filesystem.squashfs /tmp/mtails-iso/mnt/live/
 
 echo -e "\n\nwriting ISO file.."
-sudo rm -f /tmp/mtails-iso/mtails-1.5-5.1.iso
-sudo mkisofs -r -V "M-Tails" -cache-inodes -J -l -no-emul-boot -boot-load-size 4 -boot-info-table -o /tmp/mtails-iso/mtails-1.5-5.1.iso -b isolinux/isolinux.bin -c isolinux/boot.cat /tmp/mtails-iso/mnt
+sudo rm -f /tmp/mtails-iso/mtails$RELEASE_NUM-$MARTUS_NUM.iso
+sudo mkisofs -r -V "M-Tails" -cache-inodes -J -l -no-emul-boot -boot-load-size 4 -boot-info-table -o /tmp/mtails-iso/mtails$RELEASE_NUM-$MARTUS_NUM.iso -b isolinux/isolinux.bin -c isolinux/boot.cat /tmp/mtails-iso/mnt
 
 #sudo umount -f /tmp/tails-iso/mnt
 #sudo umount -f /tmp/mtails-iso/mnt
