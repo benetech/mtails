@@ -23,7 +23,7 @@ else
 fi
 
 #Pull most recent stable Tails ISO and sig
-RELEASE_STR=$(curl http://dl.amnesia.boum.org/tails/stable/ 2>&1 | grep -o -E 'href="tails-([^"#]+)"' | cut -d'"' -f2 | sed 's|/||')
+RELEASE_STR=$(curl http://dl.amnesia.boum.org/tails/stable/ 2>&1 | grep -o -E 'href="tails-([^"#]+)"' | tail -n1 | cut -d'"' -f2 | sed 's|/||')
 RELEASE_NUM=$(echo $RELEASE_STR | grep -o -E '[0-9]+\.[0-9]+(\.[0-9]+)?')
 
 TAILS_ISO_URL="http://dl.amnesia.boum.org/tails/stable/$RELEASE_STR/$RELEASE_STR.iso"
