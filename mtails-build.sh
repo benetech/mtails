@@ -27,7 +27,7 @@ RELEASE_STR=$(curl http://dl.amnesia.boum.org/tails/stable/ 2>&1 | grep -o -E 'h
 RELEASE_NUM=$(echo $RELEASE_STR | grep -o -E '[0-9]+\.[0-9]+(\.[0-9]+)?')
 
 TAILS_ISO_URL="http://dl.amnesia.boum.org/tails/stable/$RELEASE_STR/$RELEASE_STR.iso"
-TAILS_SIG_URL="https://tails.boum.org/torrents/files/$RELEASE_STR.iso.sig"
+TAILS_SIG_URL="https://tails.boum.org/tails/stable/$RELEASE_STR/$RELEASE_STR.iso.sig"
 TAILS_KEY_URL="https://tails.boum.org/tails-signing.key"
 
 #Pull most recent Martus release
