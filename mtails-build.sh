@@ -136,8 +136,8 @@ if ! ls /tmp/working/$PKG*.deb 1> /dev/null 2>&1; then
 	wget --progress=bar $(apt-get install --reinstall --print-uris -qq $PKG | cut -d"'" -f2 | grep "/${PKG}_")
 fi
 
-PKG='openjdk-8-jre_'
-if ! ls /tmp/working/$PKG*.deb 1> /dev/null 2>&1; then
+PKG='openjdk-8-jre'
+if ! ls /tmp/working/$PKG_*.deb 1> /dev/null 2>&1; then
 	wget --progress=bar $(apt-get install --reinstall --print-uris -qq $PKG | cut -d"'" -f2 | grep "/${PKG}_")
 fi
 
@@ -221,7 +221,7 @@ umount -f /proc
 exit
 EOT
 
-chmod 644 /tmp/working/chroot-tasks.sh
+chmod 777 /tmp/working/chroot-tasks.sh
 
 # chroot into the squashfs
 echo -e "\n\nInstalling Martus into Tails root filesystem"
