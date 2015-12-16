@@ -27,7 +27,7 @@ RELEASE_STR=$(curl "http://dl.amnesia.boum.org/tails/stable/?C=M;O=A" 2>&1 | gre
 RELEASE_NUM=$(echo $RELEASE_STR | grep -o -E '[0-9]+\.[0-9]+(\.[0-9]+)?')
 
 TAILS_ISO_URL="http://dl.amnesia.boum.org/tails/stable/$RELEASE_STR/$RELEASE_STR.iso"
-TAILS_SIG_URL="https://tails.boum.org/tails/stable/$RELEASE_STR/$RELEASE_STR.iso.sig"
+TAILS_SIG_URL="https://tails.boum.org/torrents/files/$RELEASE_STR.iso.sig"
 TAILS_KEY_URL="https://tails.boum.org/tails-signing.key"
 
 #Pull most recent Martus release
@@ -53,7 +53,7 @@ echo -e  "Creating working directories...\n\n"
 mkdir -p "/tmp/tails-iso"
 mkdir -p "/tmp/tails-iso/mnt"
 mkdir -p "/tmp/working"
-cp chroot-tasks.sh martus-documentation.tgz *.desktop *.png martus-documentation /tmp/working/
+cp martus-documentation.tgz *.desktop *.png martus-documentation /tmp/working/
 
 # get the tails.iso if it isn't already there
 echo -e "Checking if we already have the latest Tails ISO."
@@ -126,7 +126,7 @@ if ! ls /tmp/working/$PKG*.deb 1> /dev/null 2>&1; then
 	wget --progress=bar $(apt-get install --reinstall --print-uris -qq $PKG | cut -d"'" -f2 | grep "/${PKG}_")
 fi
 
-PKG='libjpeg62-turbo'
+PKG='libjpeg62'
 if ! ls /tmp/working/$PKG*.deb 1> /dev/null 2>&1; then
 	wget --progress=bar $(apt-get install --reinstall --print-uris -qq $PKG | cut -d"'" -f2 | grep "/${PKG}_")
 fi
@@ -179,6 +179,52 @@ fi
 
 # copy packages into /tmp directory of squashfs
 cp /tmp/working/*.deb /tmp/working/${MARTUS_REL[0]} /tmp/working/squashfs-root/tmp/
+
+
+LIBNSS=$(ls libnss3*.deb)
+LIBJPEG=$(ls libjpeg62*.deb)
+LIBJDKHEAD=$(ls openjdk-8-jre-headless*.deb)
+LIBJRE=$(ls openjdk-8-jre_*.deb)
+LIBJDK=$(ls openjdk-8-jdk*.deb)
+OPENJFX=$(ls openjfx*.deb)
+LIBOPENJFX=$(ls libopenjfx-java*.deb)
+LIBOPENJNI=$(ls libopenjfx-jni*.deb)
+LIBICU=$(ls libicu4j*.deb)
+TZDATA=$(ls tzdata*.deb)
+
+cat <<EOT >> chroot-tasks.sh
+#!/bin/bash
+
+# Install deb dependencies and unzip Martus Desktop client into /usr/local/martus
+
+mount /proc
+echo -e "\n\nInstalling Debian packages for Martus Desktop client dependencies"
+dpkg -i --force-all "/tmp/$LIBNSS"
+dpkg -i --force-all "/tmp/${LIBJPEG}"
+dpkg -i --force-all "/tmp/${LIBJDKHEAD}"
+dpkg -i --force-all "/tmp/${LIBJRE}"
+dpkg -i --force-all "/tmp/${LIBJDK}"
+dpkg -i --force-all "/tmp/${LIBOPENJNI}"
+dpkg -i --force-all "/tmp/${OPENJFX}"
+dpkg -i --force-all "/tmp/${LIBOPENJFX}"
+dpkg -i --force-all "/tmp/${LIBICU}"
+dpkg -i --force-all "/tmp/${TZDATA}"
+echo -e "\n\nInstalling Martus into /usr/local/martus"
+mkdir -p /usr/local/martus
+cd /usr/local/martus
+if [[ ! -f "/usr/local/martus/${MARTUS_REL[0]}" ]]; then
+	unzip /tmp/${MARTUS_REL[0]}
+fi
+chmod 644 /usr/local/martus/${MARTUS_REL[0]}/ThirdParty/icu4j-3.4.4.jar /usr/local/martus/${MARTUS_REL[0]}/ThirdParty/velocity-dep-1.4.jar
+rm -f /tmp/*.deb /tmp/*.zip
+umount -f /proc
+exit
+EOT
+
+
+
+
+
 
 # chroot into the squashfs
 echo -e "\n\nInstalling Martus into Tails root filesystem"
